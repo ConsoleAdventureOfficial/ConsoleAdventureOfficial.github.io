@@ -16,7 +16,7 @@ for d in dirs:
 	with open(main_dir + d + "/build.json", encoding = 'utf-8') as f:
 		builds[d] = json.loads(f.read())
 		print(builds[d])
-	#shutil.make_archive("tmp/"+d, 'zip', main_dir + d)
+	shutil.make_archive("tmp/"+d, 'zip', main_dir + d)
 	with open("tmp/"+d+".zip", "rb") as f:
 		bins[d] = base64.b64encode(f.read())
 
