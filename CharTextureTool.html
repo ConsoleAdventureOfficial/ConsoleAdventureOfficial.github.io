@@ -141,7 +141,7 @@
 		offsetYInput.oninput = function(evt) {
 			evt = evt || window.event;
 
-			currentLayer.offsetX = offsetYInput.value;
+			currentLayer.offsetY = offsetYInput.value;
 			currentLayerViewport.style.top = offsetYInput.value + "px";
 		}
 
@@ -212,7 +212,7 @@
 
 			layersData.set(layersCount, new Layer(layersCount))
 
-			document.querySelector(".viewport").innerHTML += '<pre class="viewport-layer-' + layersCount + ' mono" style="position: absolute; left: 0px; top: 0px; text-align: center; font-size: 50px; transform-origin: 0px 0px 0px;"></pre>';
+			document.querySelector(".viewport").innerHTML += '<pre class="viewport-layer-' + layersCount + ' mono" style="position: absolute; left: 0px; top: 0px; text-align: center; font-size: 48px; transform-origin: 0px 0px 0px;"></pre>';
 
 			layersCount += 1;
 		}
@@ -220,7 +220,7 @@
 		function save() {
 			let res = "new CharTexture()";
 			for (let [key, value] of layersData){
-				res += '.AddLayer("' + value.char.replace(/\\/g,"\\\\") + '", Utils.HexToColor("' + value.color.replace(/\#/g,"") + '"), new Vector2(' + value.offsetX + ', ' + value.offsetY + '), ' + degrees_to_radians(value.rotation) + 'f)';
+				res += '.AddLayer("' + value.char.replace(/\\/g,"\\\\") + '", Utils.HexToColor("' + value.color.replace(/\#/g,"") + '"), new Vector2(' + Math.round(value.offsetX/4) + ', ' + Math.round(value.offsetY/4) + '), ' + degrees_to_radians(value.rotation) + 'f)';
 			}
 			console.log(res);
 			copyToClipboard(res);
