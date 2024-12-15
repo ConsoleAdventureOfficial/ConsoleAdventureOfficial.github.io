@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Doto:wght@300&family=Noto+Sans:wght@600&display=swap" rel="stylesheet">
+	<title>CharTexture tool</title>
+	<style type="text/css">
+		* {
+			font-family: "Noto Sans", sans-serif;
+			font-optical-sizing: auto;
+			font-weight: 600;
+			font-style: normal;
+			font-variation-settings:
+			  "wdth" 100;
+			color: white;
+		}
+
+		html, body {
+			background-color: black;
+			height: 100%;
+			width: 100%;
+			padding: 0;
+			margin: 0;
+		}
+		.left-panel {
+			float: left;
+			padding: 0px 10px;
+			min-height: 100%;
+			min-width: 10%;
+			background-color: #212121;
+		}
+
+		.right-panel {
+			float: right;
+			padding: 0px 10px;
+			min-height: 100%;
+			min-width: 10%;
+			background-color: #1a1919;
+		}
+		button {
+			border-style: none;
+			border-radius: 5px;
+			background-color: gray;
+			padding: 5px;
+			color: white;
+		}
+
+		div {
+			border-radius: 5px;
+		}
+
+		input {
+			background-color: transparent;
+			outline-style: none;
+			border-style: solid;
+			border-radius: 5px;
+			border-color: gray;
+			padding: 2px 5px;
+		}
+
+		.doto-f {
+			font-family: "Doto", serif;
+			font-optical-sizing: auto;
+			font-weight: 300;
+			font-style: normal;
+			font-variation-settings:
+			  "ROND" 0;
+		}
+
+		.mono {
+			font-family: Consolas,monaco,monospace;
+		}
+	</style>
+</head>
+<body>
+	<div class="left-panel">
+		<div style="margin-top: 10px;">
+			<div class="layers">
+				
+			</div>
+			<button onclick="addLayer();">Add Layer</button>
+			<button onclick="save();">Save Layers</button>
+		</div>
+	</div>
+
+	<div class="right-panel" style="visibility: hidden;">
+		<div style="margin-top: 10px;">
+			<p><div>Symbol <input class="symbolInput" type="text" style="max-width: 25%; margin-left: 10px;" /></div></p>
+			<p><div>Color <input class="colorInput" type="color" style="max-width: 25%; margin-left: 10px;" /></div></p>
+			<p><div>Offset X <input class="offsetXInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
+			<p><div>Offset Y <input class="offsetYInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
+			<p><div>Rotation <input class="rotationInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
+		</div>
+	</div>
+
+	<div class="viewport" style="position: absolute; left: 20%; top: 20%; min-width: 50%;">
+		
+	</div>
+
+	<script type="text/javascript">
+		var layers = document.getElementsByClassName("layers")[0];
+		var toolbar = document.querySelector('.right-panel');
+		var symbolInput = document.querySelector('.symbolInput');
+		var colorInput = document.querySelector('.colorInput');
+		var offsetXInput = document.querySelector('.offsetXInput');
+		var offsetYInput = document.querySelector('.offsetYInput');
+		var rotationInput = document.querySelector('.rotationInput');
+
+		function copyToClipboard(txt) {
+			navigator.clipboard.writeText(txt).then(() => {
+			  console.log('Content copied to clipboard');
+			},() => {
+			  console.error('Failed to copy');
+			});
+		}
+
+		symbolInput.oninput = function(evt) {
+			evt = evt || window.event;
+
+			currentLayer.char = symbolInput.value;
+			currentLayerViewport.innerHTML = symbolInput.value;
+		}
+
+		colorInput.oninput = function(evt) {
+			evt = evt || window.event;
+
+			currentLayer.color = colorInput.value;
+			currentLayerViewport.style.color = colorInput.value;
+		}
+
+		offsetXInput.oninput = function(evt) {
+			evt = evt || window.event;
+
+			currentLayer.offsetX = offsetXInput.value;
+			currentLayerViewport.style.left = offsetXInput.value + "px";
+		}
+
+		offsetYInput.oninput = function(evt) {
+			evt = evt || window.event;
+
+			currentLayer.offsetX = offsetYInput.value;
+			currentLayerViewport.style.top = offsetYInput.value + "px";
+		}
+
+		rotationInput.oninput = function(evt) {
+			evt = evt || window.event;
+
+			currentLayer.rotation = rotationInput.value;
+			currentLayerViewport.style.webkitTransform = 'rotate(' + rotationInput.value + 'deg)';
+		}
+
+		var currentLayer = null;
+		var currentLayerElement = null;
+		var currentLayerID = -1;
+		var currentLayerViewport = null;
+
+		const degrees_to_radians = deg => (deg * Math.PI) / 180.0;
+
+		var layersCount = 0;
+
+		class Layer {
+			constructor(n) {
+				this.n = n;
+				this.char = "";
+				this.color = "#ffffff";
+				this.offsetX = 0;
+				this.offsetY = 0;
+				this.rotation = 0;
+			}
+		}
+
+		var layersData = new Map();
+
+		function deleteLayer(n) {
+			document.getElementsByClassName("layer-"+n)[0].remove();
+		}
+
+		function setToolbar(lyr) {
+			symbolInput.value = lyr.char;
+			colorInput.value = lyr.color;
+			offsetXInput.value = lyr.offsetX;
+			offsetYInput.value = lyr.offsetY;
+			rotationInput.value = lyr.rotation;
+		}
+
+		function chooseLayer(n){
+			if (currentLayerElement != null) {
+				currentLayerElement.style.backgroundColor = "#171716";
+			}
+
+			let div = document.getElementsByClassName("layer-"+n)[0];
+			div.style.backgroundColor = "#383837";
+
+			currentLayerElement = div;
+			currentLayerID = n;
+			currentLayer = layersData.get(n);
+			currentLayerViewport = document.querySelector(".viewport-layer-" + n)
+			setToolbar(currentLayer)
+
+			toolbar.style.visibility = 'visible';
+		}
+
+		function addLayer() {
+			let div = document.createElement("div");
+			div.style = "background-color: #171716; margin: 5px 0px; padding: 0px 10px; color: white; font-size: 15px;";
+			div.innerHTML = "<button style='background-color: transparent' onclick='chooseLayer(" + layersCount + ")'>layer #" + layersCount + "</button>" + '<button style="float: right; font-size: 10px; max-height: 100%;" onclick="deleteLayer(' + layersCount + ')">X</button>'
+			div.classList.add('layer-'+layersCount);
+			layers.append(div);
+
+			layersData.set(layersCount, new Layer(layersCount))
+
+			document.querySelector(".viewport").innerHTML += '<pre class="viewport-layer-' + layersCount + ' mono" style="position: absolute; left: 0px; top: 0px; text-align: center; font-size: 50px; transform-origin: 0px 0px 0px;"></pre>';
+
+			layersCount += 1;
+		}
+
+		function save() {
+			let res = "new CharTexture()";
+			for (let [key, value] of layersData){
+				res += '.AddLayer("' + value.char.replace(/\\/g,"\\\\") + '", Utils.HexToColor("' + value.color.replace(/\#/g,"") + '"), new Vector2(' + value.offsetX + ', ' + value.offsetY + '), ' + degrees_to_radians(value.rotation) + 'f)';
+			}
+			console.log(res);
+			copyToClipboard(res);
+		}
+	</script>
+</body>
+</html>
