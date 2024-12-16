@@ -24,6 +24,7 @@
 			width: 100%;
 			padding: 0;
 			margin: 0;
+			overflow: hidden;
 		}
 		.left-panel {
 			float: left;
@@ -46,6 +47,11 @@
 			background-color: gray;
 			padding: 5px;
 			color: white;
+		}
+
+		.bottom-container {
+			position: absolute;
+			bottom: 0;
 		}
 
 		div {
@@ -75,14 +81,21 @@
 		}
 	</style>
 </head>
-<body>
+<body class="page">
+	<div class="viewport" style="position: absolute; left: 0px; top: 0px; min-width: 50%;">
+		<pre style="position: absolute; left: -4px; top: 20px;">●</pre>
+	</div>
+
+
 	<div class="left-panel">
-		<div style="margin-top: 10px;">
+		<div style="margin-top: 5px;">
 			<div class="layers">
 				
 			</div>
 			<button onclick="addLayer();">Add Layer</button>
-			<button onclick="save();">Save Layers</button>
+			<div class="bottom-container">
+				<button onclick="save();">Save Layers</button>
+			</div>
 		</div>
 	</div>
 
@@ -96,11 +109,12 @@
 		</div>
 	</div>
 
-	<div class="viewport" style="position: absolute; left: 20%; top: 20%; min-width: 50%;">
-		
+	<div class="pushSaved" style="background-color: darkgreen; max-width: fit-content; max-height: fit-content; position: absolute; bottom: -10%; left: 50%; align-content: center; padding: 0px 20px;">
+		<p style="color: whitesmoke;">Copied!</p>
 	</div>
 
 	<script type="text/javascript">
+		var htmlElement = document.querySelector(".page");
 		var layers = document.getElementsByClassName("layers")[0];
 		var toolbar = document.querySelector('.right-panel');
 		var symbolInput = document.querySelector('.symbolInput');
@@ -108,6 +122,38 @@
 		var offsetXInput = document.querySelector('.offsetXInput');
 		var offsetYInput = document.querySelector('.offsetYInput');
 		var rotationInput = document.querySelector('.rotationInput');
+		var viewport = document.querySelector(".viewport");
+		var pushSaved = document.querySelector(".pushSaved");
+
+		var curPushAnimTimeout = -1;
+
+		var sclickX = 300;
+		var sclickY = 100;
+
+
+		updateViewportPos();
+
+
+		const pushAnimationI = {
+			bottom: ["-10%", "5px"]
+		}
+
+		const pushTimingI = {
+		  duration: 1000,
+		  iterations: 1,
+		  easing: "ease-out"
+		};
+
+		const pushAnimationO = {
+			bottom: ["5px", "-10%"]
+		}
+
+		const pushTimingO = {
+		  duration: 1000,
+		  iterations: 1,
+		  easing: "ease-in"
+		};
+
 
 		function copyToClipboard(txt) {
 			navigator.clipboard.writeText(txt).then(() => {
@@ -135,14 +181,14 @@
 			evt = evt || window.event;
 
 			currentLayer.offsetX = offsetXInput.value;
-			currentLayerViewport.style.left = offsetXInput.value + "px";
+			currentLayerViewport.style.left = offsetXInput.value*4 + "px";
 		}
 
 		offsetYInput.oninput = function(evt) {
 			evt = evt || window.event;
 
 			currentLayer.offsetY = offsetYInput.value;
-			currentLayerViewport.style.top = offsetYInput.value + "px";
+			currentLayerViewport.style.top = offsetYInput.value*4 + "px";
 		}
 
 		rotationInput.oninput = function(evt) {
@@ -176,6 +222,8 @@
 
 		function deleteLayer(n) {
 			document.getElementsByClassName("layer-"+n)[0].remove();
+			layersData.delete(n);
+			document.getElementsByClassName("viewport-layer-"+n)[0].remove();
 		}
 
 		function setToolbar(lyr) {
@@ -212,7 +260,7 @@
 
 			layersData.set(layersCount, new Layer(layersCount))
 
-			document.querySelector(".viewport").innerHTML += '<pre class="viewport-layer-' + layersCount + ' mono" style="position: absolute; left: 0px; top: 0px; text-align: center; font-size: 48px; transform-origin: 0px 0px 0px;"></pre>';
+			viewport.innerHTML += '<pre class="viewport-layer-' + layersCount + ' mono" style="position: absolute; left: 0px; top: 0px; text-align: center; font-size: 48px; transform-origin: 0px 0px 0px;"></pre>';
 
 			layersCount += 1;
 		}
@@ -220,11 +268,62 @@
 		function save() {
 			let res = "new CharTexture()";
 			for (let [key, value] of layersData){
-				res += '.AddLayer("' + value.char.replace(/\\/g,"\\\\") + '", Utils.HexToColor("' + value.color.replace(/\#/g,"") + '"), new Vector2(' + Math.round(value.offsetX/4) + ', ' + Math.round(value.offsetY/4) + '), ' + degrees_to_radians(value.rotation) + 'f)';
+				res += '.AddLayer("' + value.char.replace(/\\/g,"\\\\") + '", Utils.HexToColor("' + value.color.replace(/\#/g,"") + '"), new Vector2(' + Math.round(value.offsetX) + ', ' + Math.round(value.offsetY) + '), ' + degrees_to_radians(value.rotation) + 'f)';
 			}
 			console.log(res);
 			copyToClipboard(res);
+			
+			if (curPushAnimTimeout != undefined) {
+				clearTimeout(curPushAnimTimeout);
+			}
+			pushSaved.animate(pushAnimationI, pushTimingI);
+			pushSaved.style.bottom = "5px";
+			curPushAnimTimeout = setTimeout(animationOut, 1500);
 		}
+
+		function animationOut(){
+			pushSaved.animate(pushAnimationO, pushTimingO);
+			pushSaved.style.bottom = "-10%";
+		}
+
+		function addEvent(element, eventName, callback) {
+		    if (element.addEventListener) {
+		        element.addEventListener(eventName, callback, false);
+		    } else if (element.attachEvent) {
+		        element.attachEvent("on" + eventName, callback);
+		    } else {
+		        element["on" + eventName] = callback;
+		    }
+		}
+
+		function updateViewportPos() {
+			viewport.style.left = sclickX + "px";
+			viewport.style.top = sclickY + "px";
+		}
+ 
+		addEvent(document, "keypress", function (e) {
+			e = e || window.event;
+			if (e.keyCode == 97) {
+				console.log("left");
+				sclickX += 8;
+				updateViewportPos();
+			}
+			if (e.keyCode == 119) {
+				console.log("up");
+				sclickY += 8;
+				updateViewportPos();
+			}
+			if (e.keyCode == 100) {
+				console.log("right");
+				sclickX -= 8;
+				updateViewportPos();
+			}
+			if (e.keyCode == 115) {
+				console.log("down");
+				sclickY -= 8;
+				updateViewportPos();
+			}
+		}); 
 	</script>
 </body>
 </html>
