@@ -280,6 +280,13 @@ aw
 			document.getElementsByClassName("layer-"+n)[0].remove();
 			layersData.delete(n);
 			document.getElementsByClassName("viewport-layer-"+n)[0].remove();
+			if (currentLayerID == n) {
+				currentLayerID = -1;
+				currentLayer = null;
+				currentLayerElement = null;
+				currentLayerViewport = null;
+				toolbar.style.visibility = 'hidden';
+			}
 		}
 
 		function setToolbar(lyr) {
