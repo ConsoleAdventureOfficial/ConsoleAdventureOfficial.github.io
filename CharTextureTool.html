@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Doto:wght@300&family=Noto+Sans:wght@600&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Doto:wght@400&family=Noto+Sans:wght@600&display=swap" rel="stylesheet">
 	<title>CharTexture tool</title>
 	<style type="text/css">
 		* {
@@ -25,7 +25,36 @@
 			padding: 0;
 			margin: 0;
 			overflow: hidden;
+			user-select: none;
 		}
+
+		.blured {
+			filter: blur(0px);
+			transition: filter 0.3s ease;
+			width: 100%;
+			height: 100%;
+			pointer-events: inherit;
+		}
+
+		.saveMenu {
+
+		}
+
+		.floatMenu {
+			position: absolute;
+			left: 40%;
+			top: 40%;
+			filter: unset;
+			background-color: rgb(40, 40, 40);
+			min-width: 20%;
+			min-height: 20%;
+			align-content: center;
+			text-align: center;
+			font-size: 250%;
+			padding: 2%;
+			display: none;
+		}
+
 		.left-panel {
 			float: left;
 			padding: 0px 10px;
@@ -43,15 +72,22 @@
 		}
 		button {
 			border-style: none;
-			border-radius: 5px;
-			background-color: gray;
+			border-radius: 10px;
+			background-color: rgb(80, 80, 80);
 			padding: 5px;
-			color: white;
+			color: rgb(200, 200, 255);
+			transition: all 0.3s ease;
+		}
+
+		button:hover {
+			border-radius: 5px;
+			color: rgb(220, 255, 255);
+			background-color: rgb(120, 120, 120);
 		}
 
 		.bottom-container {
 			position: absolute;
-			bottom: 0;
+			bottom: 10px;
 		}
 
 		div {
@@ -70,7 +106,7 @@
 		.doto-f {
 			font-family: "Doto", serif;
 			font-optical-sizing: auto;
-			font-weight: 300;
+			font-weight: 400;
 			font-style: normal;
 			font-variation-settings:
 			  "ROND" 0;
@@ -82,35 +118,52 @@
 	</style>
 </head>
 <body class="page">
-	<div class="viewport" style="position: absolute; left: 0px; top: 0px; min-width: 50%;">
-		<pre style="position: absolute; left: -4px; top: 20px; color: gray;">●</pre>
-	</div>
+	<div class="blured">
+		<div class="viewport" style="position: absolute; left: 0px; top: 0px; min-width: 50%;">
+			<pre style="position: absolute; left: -4px; top: 20px; color: rgb(70, 70, 70);">●</pre>
+		</div>
 
 
-	<div class="left-panel">
-		<div style="margin-top: 5px;">
-			<div class="layers">
-				
-			</div>
-			<button onclick="addLayer();">Add Layer</button>
-			<div class="bottom-container">
-				<button onclick="save();">Save Layers</button>
+		<div class="left-panel">
+			<div style="margin-top: 5px;">
+				<div class="layers">
+					
+				</div>
+				<button onclick="addLayer();">Add Layer</button>
+				<div class="bottom-container">
+					<button onclick="guide();" style="margin-bottom: 10px; min-width: 100%;">Guide</button>
+					<br />
+					<button onclick="save();">Save Layers</button>
+				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="right-panel" style="visibility: hidden;">
-		<div style="margin-top: 10px;">
-			<p><div>Symbol <input class="symbolInput" type="text" style="max-width: 25%; margin-left: 10px;" /></div></p>
-			<p><div>Color <input class="colorInput" type="color" style="max-width: 25%; margin-left: 10px;" /></div></p>
-			<p><div>Offset X <input class="offsetXInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
-			<p><div>Offset Y <input class="offsetYInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
-			<p><div>Rotation <input class="rotationInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
+		<div class="right-panel" style="visibility: hidden;">
+			<div style="margin-top: 10px;">
+				<p><div>Symbol <input class="symbolInput" type="text" style="max-width: 25%; margin-left: 10px;" /></div></p>
+				<p><div>Color <input class="colorInput" type="color" style="max-width: 25%; margin-left: 10px;" /></div></p>
+				<p><div>Offset X <input class="offsetXInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
+				<p><div>Offset Y <input class="offsetYInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
+				<p><div>Rotation <input class="rotationInput" type="number" style="max-width: 25%; margin-left: 10px;" /></div></p>
+			</div>
 		</div>
 	</div>
 
 	<div class="pushSaved" style="background-color: darkgreen; max-width: fit-content; max-height: fit-content; position: absolute; bottom: -10%; left: 50%; align-content: center; padding: 0px 20px;">
 		<p style="color: whitesmoke;">Copied!</p>
+	</div>
+aw
+	<div class="saveMenu floatMenu">
+		<p class="doto-f">Save</p>
+		<button onclick="copyCSCode()">Copy C# Code</button>
+		<button onclick="copyIconCode()">Copy Icon Code</button>
+		<button style="position: absolute; right: 5px; top: 5px; background-color: transparent;" onclick="closeSaveMenu()">X</button>
+	</div>
+
+	<div class="guideMenu floatMenu" style="top: 30%;">
+		<p class="doto-f" style="font-size: 130%;">Guide</p>
+		<p class="doto-f" style="font-size: 90%;">W - Up <br/> A - Left <br/> S - Down <br/> D - Right</p>
+		<button style="position: absolute; right: 5px; top: 5px; background-color: transparent;" onclick="closeGuideMenu()">X</button>
 	</div>
 
 	<script type="text/javascript">
@@ -124,6 +177,9 @@
 		var rotationInput = document.querySelector('.rotationInput');
 		var viewport = document.querySelector(".viewport");
 		var pushSaved = document.querySelector(".pushSaved");
+		var blured = document.querySelector(".blured");
+		var saveMenu = document.querySelector(".saveMenu");
+		var guideMenu = document.querySelector(".guideMenu");
 
 		var curPushAnimTimeout = -1;
 
@@ -139,7 +195,7 @@
 		}
 
 		const pushTimingI = {
-		  duration: 1000,
+		  duration: 600,
 		  iterations: 1,
 		  easing: "ease-out"
 		};
@@ -149,7 +205,7 @@
 		}
 
 		const pushTimingO = {
-		  duration: 1000,
+		  duration: 600,
 		  iterations: 1,
 		  easing: "ease-in"
 		};
@@ -254,7 +310,7 @@
 		function addLayer() {
 			let div = document.createElement("div");
 			div.style = "background-color: #171716; margin: 5px 0px; padding: 0px 10px; color: white; font-size: 15px;";
-			div.innerHTML = "<button style='background-color: transparent' onclick='chooseLayer(" + layersCount + ")'>layer #" + layersCount + "</button>" + '<button style="float: right; font-size: 10px; max-height: 100%;" onclick="deleteLayer(' + layersCount + ')">X</button>'
+			div.innerHTML = "<button style='background-color: transparent' onclick='chooseLayer(" + layersCount + ")'>layer #" + layersCount + "</button>" + '<button style="float: right; font-size: 10px; max-height: 100%; background-color: transparent" onclick="deleteLayer(' + layersCount + ')">X</button>'
 			div.classList.add('layer-'+layersCount);
 			layers.append(div);
 
@@ -265,7 +321,7 @@
 			layersCount += 1;
 		}
 
-		function save() {
+		function copyCSCode() {
 			let res = "new CharTexture()";
 			for (let [key, value] of layersData){
 				res += '.AddLayer("' + value.char.replace(/\\/g,"\\\\") + '", Utils.HexToColor("' + value.color.replace(/\#/g,"") + '"), new Vector2(' + Math.round(value.offsetX) + ', ' + Math.round(value.offsetY) + '), ' + degrees_to_radians(value.rotation) + 'f)';
@@ -278,7 +334,23 @@
 			}
 			pushSaved.animate(pushAnimationI, pushTimingI);
 			pushSaved.style.bottom = "5px";
-			curPushAnimTimeout = setTimeout(animationOut, 1500);
+			curPushAnimTimeout = setTimeout(animationOut, 1000);
+		}
+
+		function copyIconCode() {
+			let res = "";
+			for (let [key, value] of layersData){
+				res += "add'" + value.char.replace(/\\/g,"\\\\") + "'" + value.color + ":" + Math.round(value.offsetX) + "x" + Math.round(value.offsetY) + "*" + degrees_to_radians(value.rotation) + ';';
+			}
+			console.log(res);
+			copyToClipboard(res);
+			
+			if (curPushAnimTimeout != undefined) {
+				clearTimeout(curPushAnimTimeout);
+			}
+			pushSaved.animate(pushAnimationI, pushTimingI);
+			pushSaved.style.bottom = "5px";
+			curPushAnimTimeout = setTimeout(animationOut, 1000);
 		}
 
 		function animationOut(){
@@ -294,6 +366,30 @@
 		    } else {
 		        element["on" + eventName] = callback;
 		    }
+		}
+
+		function guide() {
+			blured.style.filter = "blur(10px)";
+			blured.style.pointerEvents = "none";
+			guideMenu.style.display = "block";
+		}
+
+		function save() {
+			blured.style.filter = "blur(10px)";
+			blured.style.pointerEvents = "none";
+			saveMenu.style.display = "block";
+		}
+
+		function closeSaveMenu() {
+			blured.style.filter = "blur(0px)";
+			blured.style.pointerEvents = "inherit";
+			saveMenu.style.display = "none";
+		}
+
+		function closeGuideMenu() {
+			blured.style.filter = "blur(0px)";
+			blured.style.pointerEvents = "inherit";
+			guideMenu.style.display = "none";
 		}
 
 		function updateViewportPos() {
