@@ -163,7 +163,6 @@ aw
 	<div class="guideMenu floatMenu" style="top: 30%;">
 		<p class="doto-f" style="font-size: 130%;">Guide</p>
 		<p class="doto-f" style="font-size: 90%;">W - Up <br/> A - Left <br/> S - Down <br/> D - Right</p>
-		<p style="font-size: 40%;">(use english keyboard)</p>
 		<button style="position: absolute; right: 5px; top: 5px; background-color: transparent;" onclick="closeGuideMenu()">X</button>
 	</div>
 
@@ -224,7 +223,7 @@ aw
 			evt = evt || window.event;
 
 			currentLayer.char = symbolInput.value;
-			currentLayerViewport.innerHTML = symbolInput.value;
+			currentLayerViewport.innerHTML = symbolInput.value.replace(/\\n/g,"<br />");
 		}
 
 		colorInput.oninput = function(evt) {
@@ -324,7 +323,7 @@ aw
 
 			layersData.set(layersCount, new Layer(layersCount))
 
-			viewport.innerHTML += '<pre class="viewport-layer-' + layersCount + ' mono" style="position: absolute; left: 0px; top: 0px; text-align: center; font-size: 48px; transform-origin: 0px 0px 0px;"></pre>';
+			viewport.innerHTML += '<pre class="viewport-layer-' + layersCount + ' mono" style="position: absolute; left: 0px; top: 0px; text-align: left; font-size: 48px; transform-origin: 0px 0px 0px;"></pre>';
 
 			layersCount += 1;
 		}
