@@ -133,7 +133,9 @@
 				<div class="bottom-container">
 					<button onclick="guide();" style="margin-bottom: 10px; min-width: 100%;">Guide</button>
 					<br />
-					<button onclick="save();">Save Layers</button>
+					<button onclick="save();" style="margin-bottom: 10px; min-width: 100%;">Save Layers</button>
+					<br />
+					<button onclick="load();">Load Layers</button>
 				</div>
 			</div>
 		</div>
@@ -157,7 +159,15 @@ aw
 		<p class="doto-f">Save</p>
 		<button onclick="copyCSCode()">Copy C# Code</button>
 		<button onclick="copyIconCode()">Copy Icon Code</button>
+		<button onclick="copyShare()">Share</button>
 		<button style="position: absolute; right: 5px; top: 5px; background-color: transparent;" onclick="closeSaveMenu()">X</button>
+	</div>
+
+	<div class="loadMenu floatMenu">
+		<p class="doto-f">Load</p>
+		<input type="text" class="codeInput"><br>
+		<button onclick="loadbtnIconCode()">Load Icon Code</button>
+		<button style="position: absolute; right: 5px; top: 5px; background-color: transparent;" onclick="closeLoadMenu()">X</button>
 	</div>
 
 	<div class="guideMenu floatMenu" style="top: 30%;">
@@ -168,6 +178,9 @@ aw
 	</div>
 
 	<script type="text/javascript">
+		const queryString = window.location.search;
+		const urlParams = new URLSearchParams(queryString);
+
 		var htmlElement = document.querySelector(".page");
 		var layers = document.getElementsByClassName("layers")[0];
 		var toolbar = document.querySelector('.right-panel');
@@ -180,7 +193,9 @@ aw
 		var pushSaved = document.querySelector(".pushSaved");
 		var blured = document.querySelector(".blured");
 		var saveMenu = document.querySelector(".saveMenu");
+		var loadMenu = document.querySelector(".loadMenu");
 		var guideMenu = document.querySelector(".guideMenu");
+		var codeInput = document.querySelector(".codeInput");
 
 		var curPushAnimTimeout = -1;
 
@@ -345,11 +360,16 @@ aw
 			curPushAnimTimeout = setTimeout(animationOut, 1000);
 		}
 
-		function copyIconCode() {
+		function getIconCode() {
 			let res = "";
 			for (let [key, value] of layersData){
 				res += "add'" + value.char.replace(/\\/g,"\\\\") + "'" + value.color + ":" + Math.round(value.offsetX) + "x" + Math.round(value.offsetY) + "*" + degrees_to_radians(value.rotation) + ';';
 			}
+			return res;
+		}
+
+		function copyIconCode() {
+			res = getIconCode();
 			console.log(res);
 			copyToClipboard(res);
 			
@@ -388,10 +408,22 @@ aw
 			saveMenu.style.display = "block";
 		}
 
+		function load() {
+			blured.style.filter = "blur(10px)";
+			blured.style.pointerEvents = "none";
+			loadMenu.style.display = "block";
+		}
+
 		function closeSaveMenu() {
 			blured.style.filter = "blur(0px)";
 			blured.style.pointerEvents = "inherit";
 			saveMenu.style.display = "none";
+		}
+
+		function closeLoadMenu() {
+			blured.style.filter = "blur(0px)";
+			blured.style.pointerEvents = "inherit";
+			loadMenu.style.display = "none";
 		}
 
 		function closeGuideMenu() {
@@ -403,6 +435,126 @@ aw
 		function updateViewportPos() {
 			viewport.style.left = sclickX + "px";
 			viewport.style.top = sclickY + "px";
+		}
+
+		function loadbtnIconCode() {
+			loadFromIcon(codeInput.value);
+		}
+
+		function loadFromIcon(data) {
+			var layersL = [];
+			var opened = false;
+			var openedT = 0;
+			var curlr = 0;
+			for (var i = 0; i < data.length; i++) {
+				var symbol = data[i];
+				if (!opened && (symbol == "a" | symbol == "d")) {
+					if (layersL.length == curlr) {
+						layersL.push(new Map());
+						layersL[curlr].set("content");
+						layersL[curlr].content = "";
+						layersL[curlr].set("color");
+						layersL[curlr].color = "";
+						layersL[curlr].set("X");
+						layersL[curlr].X = "";
+						layersL[curlr].set("Y");
+						layersL[curlr].Y = "";
+						layersL[curlr].set("R");
+						layersL[curlr].R = "";
+					}
+					continue;
+				}
+				else if (!opened && (symbol == "'")) {
+					opened = true;
+					openedT = 0;
+					continue;
+				}
+				else if (opened && (symbol == "'")) {
+					opened = false;
+					continue;
+				}
+				else if (!opened && (symbol == "#")) {
+					opened = true;
+					openedT = 1;
+					continue;
+				}
+				else if (opened && openedT != 0 && (symbol == ":")) {
+					openedT = 2;
+					continue;
+				}
+				else if (opened && openedT != 0 && (symbol == "x")) {
+					openedT = 3;
+					continue;
+				}
+				else if (opened && openedT != 0 && (symbol == "*")) {
+					openedT = 4;
+					continue;
+				}
+				else if (opened && openedT != 0 && (symbol == ";")) {
+					opened = false;
+					curlr += 1;
+					continue;
+				}
+
+				if (opened) {
+					if (openedT == 0) {
+						layersL[curlr].content += symbol;
+					}
+					if (openedT == 1) {
+						layersL[curlr].color += symbol;
+					}
+					if (openedT == 2) {
+						layersL[curlr].X += symbol;
+					}
+					if (openedT == 3) {
+						layersL[curlr].Y += symbol;
+					}
+					if (openedT == 4) {
+						layersL[curlr].R += symbol;
+					}
+				}
+			}
+			console.log(layersL);
+
+			loadFromData(layersL);
+		}
+
+		function loadFromData(layersL) {
+			for (var i = 0; i < layersL.length; i++) {
+				addLayer();
+				console.log(layersData);
+				var lr = layersData.get(layersCount - 1);
+				layersL[i].content = layersL[i].content.replaceAll("\\\\", "\\");
+				layersL[i].R = Math.round(180 * parseFloat(layersL[i].R) / Math.PI);
+				lr.char = layersL[i].content;
+				symbolInput.value = layersL[i].content;
+				lr.color = "#" + layersL[i].color;
+				colorInput.value = "#" + layersL[i].color;
+				lr.offsetX = layersL[i].X;
+				offsetXInput.value = layersL[i].X;
+				lr.offsetY = layersL[i].Y;
+				offsetYInput.value = layersL[i].Y;
+				lr.rotation = layersL[i].R;
+				rotationInput.value = layersL[i].R;
+
+				var vl = document.querySelector(".viewport-layer-" + (layersCount - 1).toString())
+				vl.innerHTML = layersL[i].content.replace(/\\n/g,"<br />");
+				vl.style.color = "#" + layersL[i].color;
+				vl.style.left = parseInt(layersL[i].X)*4 + "px";
+				vl.style.top = parseInt(layersL[i].Y)*4 + "px";
+				vl.style.webkitTransform = 'rotate(' + layersL[i].R + 'deg)';
+			}
+		}
+
+		function copyShare() {
+			copyToClipboard("https://consoleadventureofficial.github.io/CharTextureTool?shared=" + btoa(getIconCode()));
+
+			if (curPushAnimTimeout != undefined) {
+				clearTimeout(curPushAnimTimeout);
+			}
+			pushSaved.animate(pushAnimationI, pushTimingI);
+			pushSaved.style.bottom = "5px";
+			curPushAnimTimeout = setTimeout(animationOut, 1000);
 		}
  
 		addEvent(document, "keypress", function (e) {
@@ -428,6 +580,11 @@ aw
 				updateViewportPos();
 			}
 		}); 
+
+
+		if (urlParams.has('shared')) {
+			loadFromIcon(atob(urlParams.get('shared')));
+		}
 	</script>
 </body>
 </html>
