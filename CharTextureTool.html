@@ -235,6 +235,15 @@ aw
 			});
 		}
 
+		function hexToRgb(hex) {
+			var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			return result ? {
+				r: parseInt(result[1], 16),
+				g: parseInt(result[2], 16),
+				b: parseInt(result[3], 16)
+			} : null;
+		}
+
 		symbolInput.oninput = function(evt) {
 			evt = evt || window.event;
 
@@ -347,7 +356,8 @@ aw
 		function copyCSCode() {
 			let res = "new CharTexture()";
 			for (let [key, value] of layersData){
-				res += '.AddLayer("' + value.char.replace(/\\/g,"\\\\") + '", Utils.HexToColor("' + value.color.replace(/\#/g,"") + '"), new Vector2(' + Math.round(value.offsetX) + ', ' + Math.round(value.offsetY) + '), ' + degrees_to_radians(value.rotation) + 'f)';
+				let colorRGB = hexToRgb(value.color);
+				res += '.AddLayer("' + value.char.replace(/\\/g,"\\\\") + '", new Color(' + colorRGB.r + ", " + colorRGB.g + ", " + colorRGB.b + '), new Vector2(' + Math.round(value.offsetX) + ', ' + Math.round(value.offsetY) + '), ' + degrees_to_radians(value.rotation) + 'f)';
 			}
 			console.log(res);
 			copyToClipboard(res);
